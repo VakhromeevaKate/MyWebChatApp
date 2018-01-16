@@ -1,0 +1,35 @@
+﻿@model IEnumerable<MyWebChatApp.Models.Messages>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.PayLoadId)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.PayLoad)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.InsertedOn)
+        </th>
+
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.PayLoadId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PayLoad)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.InsertedOn)
+            </td>
+        </tr>
+    }
+
+</table>

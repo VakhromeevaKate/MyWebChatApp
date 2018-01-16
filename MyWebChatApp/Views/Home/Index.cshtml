@@ -1,0 +1,101 @@
+﻿@{
+    ViewBag.Title = "MyWebChat";
+}
+<head>
+    <meta encoding ="UTF-8" />
+</head>
+<body>
+    <h2>MyWebChat</h2>
+    <p>Чат-комната</p>
+    <div id="header"></div>
+    <div class="container">
+        <input type="text" id="message" placeholder="Введите сообщение:"/>
+        <input type="button" id="sendmessage" value="Отправить" />
+        <input type="hidden" id="displayname" />
+        <ul id="discussion"></ul>
+    </div>
+    <div class="container body-content">
+        @section scripts {
+            <!--Ссылки на используемые скрипты. -->
+            <script src="~/Scripts/jquery.signalR-2.2.2.min.js"></script>
+            <script src="~/signalr/hubs"></script>
+            <!-- Скрипт, использующий SignalR для обновления чата и отправки сообщений.-->
+            <script>
+                $(function () {
+
+                    // Ссылаемся на наш hub (который на деле ChatHub, но здесь применяется какое-то хитрое наименование, и если
+                    //хаб назвать как-то иначе, работать корректно данный скрипт не будет).
+                    var chat = $.connection.chatHub
+
+                    // Функция, которую будет звать хаб для обмена сообщениями.
+                    chat.client.addNewMessageToPage = function (name, message) {
+                        // Добавка сообщения на страничку
+                        $('#discussion').append('<li><strong>' + htmlEncode(name)
+                            + '</strong>: ' + htmlEncode(message) + '</li>');
+                    };
+                    chat.client.updateMessages = function () {
+                        getAllMessages();
+                    };
+
+                    // Получаем имя юзера
+                    $('#displayname').val(prompt('Ваше имя:', ''));
+                    // установка в скрытых полях имени текущего пользователя
+                    var userName = $('#displayname').val();
+                    $('#header').html('<h3>Добро пожаловать, ' + userName + '</h3>');
+                    $('#chatusers').append('<li><strong>' + htmlEncode(userName) + '</strong></li>');
+
+                    // Добавляем нового пользователя
+                    chat.client.onNewUserConnected = function (name) {
+                        AddUser(name);
+                    }
+                    // Удаляем пользователя
+                    chat.client.onUserDisconnected = function (name) {
+                        $('#' + id).remove();
+                    }
+                    // Устанавливаем фокус на форму отправки
+                    $('#message').focus();
+                    // Соединяемся с хабом.
+                    $.connection.hub.start().done(function () {
+
+                        $('#sendmessage').click(function () {
+                            //Отправляем на сервер через хаб
+                            chat.server.send($('#displayname').val(), $('#message').val());
+                            // Очищаем форму, устанавливаем фокус
+                            $('#message').val('').focus();
+                        });
+                        }).fail(function (e) {
+                            alert(e);
+                    });
+                });
+                // html-encoder для отображения сообщений на странице.
+                function htmlEncode(value) {
+                    var encodedValue = $('<div />').text(value).html();
+                    return encodedValue;
+                }
+
+                //Добавление нового пользователя
+                function AddUser(name) {
+                    var userId = $('#hdId').val();
+                    $('#chatusers').append('<li><strong>' + htmlEncode(userName) + '</strong></li>');
+                }
+
+
+
+
+            </script>
+        }
+    </div>
+    <div id="chatroom" class=" table-striped">
+        <h4>Пользователи онлайн:</h4>
+        <ul id="chatusers">
+            
+        </ul>
+    </div>
+
+    <div class="container body-content">
+        <hr />
+        <footer>
+            <p>vakhromeevae &copy; @DateTime.Now.Year – Веб-чат приложение ASP.NET</p>
+        </footer>
+    </div>
+</body>
